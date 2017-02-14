@@ -99,18 +99,42 @@ def Processing(text):
 def ApplyTransform(text,transformation):
     # takes a text and a transformation and returns the text with that transformation applied where relevant.
     # assume the transformation is of the form a → b / z __.
-    return True
+    # transformation = [a,b,z] for simplicity
+    a = transformation[0]
+    b = transformation[1]
+    z = transformation[2]
+    for i in range(1,len(text)):
+        if text[i][1] == a and text[i-1][1] == z: #this is what we lookin for !
+            text[i][1] = b #change tag to b
+    return text
 
 def CompareTexts(text1,text2):
     # takes two texts and returns the number of tags for which they disagree.
-    return True
+    counter = 0
+    for i in range(0,len(text1)): #loop thru all word/tag combos
+        if not text1[i][1] == text2[i][1]:
+            counter+=1
+    return counter
 
-def BestTransform():
+def BestTransform(candidateTransforms,FinalText,MyText):
     #it determines which of the candidateTransforms is the best one.
-    #To do this you’ll need the correctly tagged version of the text; this is included in the text.py file as t2
+    #FinalText is the correctly tagged version of the text & MyText is the tagging that my functions did
+    best_transformed_text = None
+    best_transform = None
+    best_errors = None
+    for ct in candidateTransforms:
+        MyNewText = ApplyTransform(MyText,ct)
+        errorcount = CompareTexts(MyNewText,FinalText)
+        if best_transform == None:
+            best_transformed_text = MyNewText
+            best_transform = ct
+            best_errors = errorcount
+        else:
+            if best_errors > errorcount: #aka if this new transformation is better than the previous 1
+                best_transformed_text = MyNewText
+                best_transform = ct
+                best_errors = errorcount
+    return best_transform
 
-    return True
 
-"""
-[('The', u'AT'), ('government', u'NN'), ("'", u"'"), ('s', u'NP'), ('borrowing', u'VBG'), ('authority', u'NN'), ('dropped', u'VBD'), ('at', u'IN'), ('midnight', u'NN'), ('Tuesday', u'NR'), ('to', u'TO'), ('2', u'CD'), ('.', u'.'), ('80', u'CD'), ('trillion', u'CD'), ('dollars', u'NNS'), ('.', u'.'), ('Legislation', u'NN'), ('to', u'TO'), ('lift', u'VB'), ('the', u'AT'), ('debt', u'NN'), ('ceiling', u'NN'), ('is', u'BEZ'), ('ensnarled', None), ('in', u'IN'), ('the', u'AT'), ('fight', u'NN'), ('over', u'IN'), ('cutting', u'VBG'), ('taxes', u'NNS'), ('.', u'.'), ('The', u'AT'), ('House', u'NN'), ('has', u'HVZ'), ('voted', u'VBD'), ('to', u'TO'), ('raise', u'VB'), ('the', u'AT'), ('ceiling', u'NN'), ('to', u'TO'), ('3', u'CD'), ('.', u'.'), ('1', u'CD'), ('trillion', u'CD'), ('dollars', u'NNS'), (',', u','), ('but', u'CC'), ('the', u'AT'), ('Senate', u'NN-TL'), ('is', u'BEZ'), ("n't", '*'), ('expected', u'VBN'), ('to', u'TO'), ('act', u'NN-TL'), ('until', u'CS'), ('next', u'AP'), ('week', u'NN'), ('at', u'IN'), ('the', u'AT'), ('earliest', u'JJT'), ('.', u'.'), ('The', u'AT'), ('Treasury', u'NN-TL'), ('said', u'VBD'), ('the', u'AT'), ('United', u'VBN-TL'), ('States', u'NNS-TL'), ('will', u'MD'), ('default', u'NN'), ('if', u'CS'), ('Congress', u'NP'), ('does', u'DOZ'), ("n't", '*'), ('act', u'NN-TL'), ('.', u'.'), ('Vitulli', None), ('was', u'BEDZ'), ('named', u'VBN'), ('senior', u'JJ'), ('vice', u'NN'), ('president', u'NN-TL'), ('and', u'CC'), ('general', u'JJ'), ('manager', u'NN'), ('of', u'IN'), ('the', u'AT'), ('United', u'VBN-TL'), ('States', u'NNS-TL'), ('sales', u'NNS'), ('and', u'CC'), ('marketing', u'VBG'), ('arm', u'NN'), ('of', u'IN'), ('Japanese', u'JJ'), ('auto', u'NN'), ('maker', u'NN'), ('Mazda', None), ('.', u'.'), ('In', u'IN'), ('the', u'AT'), ('new', u'JJ'), ('position', u'NN'), ('he', u'PPS'), ('will', u'MD'), ('oversee', None), ('Mazda', None), ("'", u"'"), ('s', u'NP'), ('American', u'JJ'), ('sales', u'NNS'), (',', u','), ('service', u'NN'), (',', u','), ('parts', u'NNS'), (',', u','), ('and', u'CC'), ('marketing', u'VBG'), ('operations', u'NNS'), ('.', u'.')]
-"""
+MyText = [('The', u'AT'), ('government', u'NN'), ("'", u"'"), ('s', u'NP'), ('borrowing', u'VBG'), ('authority', u'NN'), ('dropped', u'VBD'), ('at', u'IN'), ('midnight', u'NN'), ('Tuesday', u'NR'), ('to', u'TO'), ('2', u'CD'), ('.', u'.'), ('80', u'CD'), ('trillion', u'CD'), ('dollars', u'NNS'), ('.', u'.'), ('Legislation', u'NN'), ('to', u'TO'), ('lift', u'VB'), ('the', u'AT'), ('debt', u'NN'), ('ceiling', u'NN'), ('is', u'BEZ'), ('ensnarled', UNK), ('in', u'IN'), ('the', u'AT'), ('fight', u'NN'), ('over', u'IN'), ('cutting', u'VBG'), ('taxes', u'NNS'), ('.', u'.'), ('The', u'AT'), ('House', u'NN'), ('has', u'HVZ'), ('voted', u'VBD'), ('to', u'TO'), ('raise', u'VB'), ('the', u'AT'), ('ceiling', u'NN'), ('to', u'TO'), ('3', u'CD'), ('.', u'.'), ('1', u'CD'), ('trillion', u'CD'), ('dollars', u'NNS'), (',', u','), ('but', u'CC'), ('the', u'AT'), ('Senate', u'NN-TL'), ('is', u'BEZ'), ("n't", '*'), ('expected', u'VBN'), ('to', u'TO'), ('act', u'NN-TL'), ('until', u'CS'), ('next', u'AP'), ('week', u'NN'), ('at', u'IN'), ('the', u'AT'), ('earliest', u'JJT'), ('.', u'.'), ('The', u'AT'), ('Treasury', u'NN-TL'), ('said', u'VBD'), ('the', u'AT'), ('United', u'VBN-TL'), ('States', u'NNS-TL'), ('will', u'MD'), ('default', u'NN'), ('if', u'CS'), ('Congress', u'NP'), ('does', u'DOZ'), ("n't", '*'), ('act', u'NN-TL'), ('.', u'.'), ('Vitulli', UNK), ('was', u'BEDZ'), ('named', u'VBN'), ('senior', u'JJ'), ('vice', u'NN'), ('president', u'NN-TL'), ('and', u'CC'), ('general', u'JJ'), ('manager', u'NN'), ('of', u'IN'), ('the', u'AT'), ('United', u'VBN-TL'), ('States', u'NNS-TL'), ('sales', u'NNS'), ('and', u'CC'), ('marketing', u'VBG'), ('arm', u'NN'), ('of', u'IN'), ('Japanese', u'JJ'), ('auto', u'NN'), ('maker', u'NN'), ('Mazda', UNK), ('.', u'.'), ('In', u'IN'), ('the', u'AT'), ('new', u'JJ'), ('position', u'NN'), ('he', u'PPS'), ('will', u'MD'), ('oversee', UNK), ('Mazda', UNK), ("'", u"'"), ('s', u'NP'), ('American', u'JJ'), ('sales', u'NNS'), (',', u','), ('service', u'NN'), (',', u','), ('parts', u'NNS'), (',', u','), ('and', u'CC'), ('marketing', u'VBG'), ('operations', u'NNS'), ('.', u'.')]
