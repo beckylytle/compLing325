@@ -1,6 +1,7 @@
 #NAME: Becky Lytle
+import copy
 
-terminals = set(['that','this','a','book','flight','meal','money','include','prefer','I','she','me','Houston','NWA','does','from','to','on','near','through'])
+terminals = set(['that','this','a','book','flight','meal','money','include','prefer','I','she','me','Houston','TWA','does','from','to','on','near','through'])
 
 nonterminals = set(['S','NP','Nominal','VP','PP','Det','Noun','Verb','Pronoun','Proper-Noun','Aux','Preposition'])
 
@@ -9,7 +10,7 @@ grammar = {'S':[['NP','VP'],['Aux','NP','VP'],['VP']],'NP':[['Pronoun'],['Proper
 
 """Part 1: Chomsky Normal Form"""
 
-def InCNF(g):
+def InCNF(g,terminals,nonterminals):
     # takes a grammar and returns True if that grammar is in CNF and False otherwise.
     value = True
     for leftSide in g:
@@ -27,11 +28,117 @@ def InCNF(g):
 
 """Part 2: Converting to Chomsky Normal Form"""
 
-def ConvertToCNF(g):
+def miniCheck(l,r,terminals,nonterminals):
+    if type(r)==type('') and r in terminals:
+        return True
+    elif type(r)==type('') and not r in terminals:
+        return False #this is unlikely
+    else:
+        if len(r) < 2:
+            return False
+        elif len(r) > 2:
+            return False
+        elif not r[0] in nonterminals or not r[1] in nonterminals:
+            return False
+        else:
+            return True
+
+def checkUnit(grammar):
+    for left in grammar:
+        for right in grammar[left]:
+            if type(right)!=type('') and len(right)==1:
+                return False
+    return True
+
+def UnitProductions(grammar):
+    newg = copy.deepcopy(grammar)
+    for left in grammar:
+        for right in grammar[left]:
+            if len(right)==1 and type(right)!=type(''): #aka if this is a unit production
+                #if left-->right is a unit production
+                #we wanna find all rules such that right --> x
+                #and add left --> x
+                RS = right[0]
+                RULES = grammar[right[0]]
+                for word in RULES:
+                    #grammar[left] += [word]
+                    newg[left]+=[word]
+                #grammar[left].remove([RS])
+                newg[left].remove([RS])
+    check = checkUnit(newg)
+    if check:
+        return newg
+    else:
+        print newg
+        return UnitProductions(newg)
+
+def ConvertToCNF(g,i,terminals,nonterminals):
     # This function takes a grammar and returns an equivalent grammar in Chomsky Normal Form
+    # PASS IN i AS 0!!!!!
+    newG = {}
+    for key in g:
+        newG[key] = []
+    for leftSide in g:
+        for val in g[leftSide]:
+            cnf = miniCheck(leftSide,val,terminals,nonterminals)
+            if not cnf: #Run Thru 3 Cases
+                if len(val)>2:
+                    #im gonna do this sloppily bc i think itll end up working
+                    new = val[0:2] #get the first two things
+                    other = val[2:] #get the rest of the things
+                    dummy = 'X' + str(i)
+                    i+=1 #update i so we never make the same dummy var again
+                    newG[dummy] = [new]
+                    newrule = [dummy] + other
+                    newG[leftSide] += [newrule] #incorporate into old rule
+                    # a better way to do this would be to make a helper function that loops thru the rule til its ok
+                    print 'CASE 1'
+                    print 'added ',leftSide,'-->',newrule,' and ',dummy,'-->',new
+                    nonterminals.add(dummy)
+                elif len(val)<2:
+                    #this shouldn't be happening
+                    print leftSide,val
+                    print "something is wrong...!"
+                    exit()
+                else:
+                    if not val[0] in nonterminals:
+                        baby = val[0] #bc its like the tiny baby letter!!
+                        dummy = 'X' + str(i)
+                        i+=1 #update i so we never make the same dummy var again
+                        newG[dummy] = [baby]
+                        newG[leftSide] += [[dummy,val[1]]]
+                        print 'CASE 2'
+                        print 'added ',leftSide,'-->',dummy,val[1],' and ',dummy,'-->',[baby]
+                        nonterminals.add(dummy)
+                    else:
+                        baby = val[1] #bc its like the tiny baby letter!!
+                        dummy = 'X' + str(i)
+                        i+=1 #update i so we never make the same dummy var again
+                        newG[dummy] = [baby]
+                        newG[leftSide] += [[val[0],dummy]]
+                        print 'CASE 3'
+                        print 'added ',leftSide,'-->',val[0],dummy,' and ',dummy,'-->',[baby]
+                        nonterminals.add(dummy)
 
-    return True # Placeholder
+            if cnf:
+                newG[leftSide]+=[val] #Add to our new grammar
+    #At the end...
+    check = InCNF(newG,terminals,nonterminals)
+    if check == True:
+        return newG
+    else:
+        return ConvertToCNF(newG,i,terminals,nonterminals) #do it again? maybe not the most efficient method
 
+"""
+terminals = ['e']
+nonterminals = ['S','A','B','C']
+grammar = {'S':[['A','B','C'],['A']],'A':[['C']],'B':[['A'],['B','C']],'C':['e'] }
+"""
+g=UnitProductions(grammar)
+print g
+newg=ConvertToCNF(g,0,terminals,nonterminals)
+print newg
+print InCNF(newg,terminals,nonterminals)
 
 """Part 3: CKY Algorithm"""
 
@@ -57,17 +164,17 @@ def CKYParser(g,s):
 
 """Demonstrations"""
 
-print InCNF(grammar) # Should return False!
+#print InCNF(grammar) # Should return False!
 
-newgrammar = ConvertToCNF(grammar)
+#newgrammar = ConvertToCNF(grammar,0,terminals,nonterminals)
 
-print newgrammar
+#print newgrammar
 
-print InCNF(newgrammar) # Should return True!
+#print InCNF(newgrammar) # Should return True!
 
-print CKYRecognizer(newgrammar,'Book the flight through Houston') # Should return True!
+#print CKYRecognizer(newgrammar,'book that flight through Houston') # Should return True!
 
-# Add more tests of CKYRecognizer here.
+"""Add more tests of CKYRecognizer here."""
 
 
 
