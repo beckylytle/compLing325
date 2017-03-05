@@ -134,21 +134,77 @@ terminals = ['e']
 nonterminals = ['S','A','B','C']
 grammar = {'S':[['A','B','C'],['A']],'A':[['C']],'B':[['A'],['B','C']],'C':['e'] }
 """
-g=UnitProductions(grammar)
-print g
-newg=ConvertToCNF(g,0,terminals,nonterminals)
-print newg
-print InCNF(newg,terminals,nonterminals)
+#g=UnitProductions(grammar)
+#print g
+#newg=ConvertToCNF(g,0,terminals,nonterminals)
+#print newg
+#print InCNF(newg,terminals,nonterminals)
 
 """Part 3: CKY Algorithm"""
 
 # This function takes a grammar and a string and returns True if that grammar generates that string, False otherwise.
 
+def helper(g,v1,v2):
+    answer = []
+    for left in g:
+        for right in g[left]:
+            if type(right)!=type(''):
+                if right[0]==v1 and right[1]==v2:
+                    answer+=[left]
+    return answer
+
+
 def CKYRecognizer(g,s):
+    s=s.split()
+    size=len(s)
+    #create n x n matrix
+    #columns correspond to word in s
+    #for example, matrix[n][m] corresponds to word m in row n
+    matrix = []
+    for n in range(0,size):
+        matrix += [[]]
+        for m in range(0,size):
+            matrix[n] += [[]]
+    #first, go along diagonal!!
+    for i in range(0,size):
+        word = s[i]
+        #current = matrix[i][i]
+        #go thru grammar and see if word is ever on the right side ..
+        for rule in g:
+            if word in g[rule]:
+                matrix[i][i] += [rule]
+    #now..go along the upper diagonals until u reach matrix[0][n]
+    for j in range(1,size):
+        #each loop of j represents a new diagonal we will go along ..
+        length = size-j #this is how long the diagonal is
+        row = 0
+        col = j
+        for k in range(0,length):
+            #current box = matrix[row][col]
+            #after filling this box, we do row+=1, col+=1
+            #for this box, we must check all of the relevant combos!!
+            #aka [ (row,row) & (row+1,col), (row,row+1) & (row+2,col) ... (row,col-1) & (col,col) ]
+            #and for all of those combos we have to check the actual combos of stuff in the BOXES
+            print ('BOX',row,col)
+            for val in range(row,col):
+                first = (row,val)
+                firstbox = matrix[row][val]
+                second = (val+1,col)
+                secondbox = matrix[val+1][col]
+                print first,second
+                print firstbox,secondbox
+                for v in range(0,len(firstbox)):
+                    for x in range(0,len(secondbox)):
+                        val1= firstbox[v]
+                        val2= secondbox[x]
+                        combo = helper(g,val1,val2) #CALL HELPER FUNCTION TO SEE IF ANY RELEVANT GRAMMAR RULES
+                        #now see if these r ever seen together!!
+                        for t in combo:
+                            matrix[row][col] += [t]
+            row+=1
+            col+=1
+    return matrix
 
-   # Fill in your algorithm here
-
-   return True  # Placeholder
 
 
 """Extra Credit"""
@@ -166,13 +222,14 @@ def CKYParser(g,s):
 
 #print InCNF(grammar) # Should return False!
 
-#newgrammar = ConvertToCNF(grammar,0,terminals,nonterminals)
+grammar = UnitProductions(grammar) #NECESSARY STEP
+newgrammar = ConvertToCNF(grammar,0,terminals,nonterminals)
 
 #print newgrammar
 
 #print InCNF(newgrammar) # Should return True!
 
-#print CKYRecognizer(newgrammar,'book that flight through Houston') # Should return True!
+print CKYRecognizer(newgrammar,'book that flight through Houston') # Should return True!
 
 """Add more tests of CKYRecognizer here."""
 
