@@ -69,7 +69,7 @@ def UnitProductions(grammar):
     if check:
         return newg
     else:
-        print newg
+        #print newg
         return UnitProductions(newg)
 
 def ConvertToCNF(g,i,terminals,nonterminals):
@@ -92,8 +92,8 @@ def ConvertToCNF(g,i,terminals,nonterminals):
                     newrule = [dummy] + other
                     newG[leftSide] += [newrule] #incorporate into old rule
                     # a better way to do this would be to make a helper function that loops thru the rule til its ok
-                    print 'CASE 1'
-                    print 'added ',leftSide,'-->',newrule,' and ',dummy,'-->',new
+                    #print 'CASE 1'
+                    #print 'added ',leftSide,'-->',newrule,' and ',dummy,'-->',new
                     nonterminals.add(dummy)
                 elif len(val)<2:
                     #this shouldn't be happening
@@ -107,8 +107,8 @@ def ConvertToCNF(g,i,terminals,nonterminals):
                         i+=1 #update i so we never make the same dummy var again
                         newG[dummy] = [baby]
                         newG[leftSide] += [[dummy,val[1]]]
-                        print 'CASE 2'
-                        print 'added ',leftSide,'-->',dummy,val[1],' and ',dummy,'-->',[baby]
+                        #print 'CASE 2'
+                        #print 'added ',leftSide,'-->',dummy,val[1],' and ',dummy,'-->',[baby]
                         nonterminals.add(dummy)
                     else:
                         baby = val[1] #bc its like the tiny baby letter!!
@@ -116,8 +116,8 @@ def ConvertToCNF(g,i,terminals,nonterminals):
                         i+=1 #update i so we never make the same dummy var again
                         newG[dummy] = [baby]
                         newG[leftSide] += [[val[0],dummy]]
-                        print 'CASE 3'
-                        print 'added ',leftSide,'-->',val[0],dummy,' and ',dummy,'-->',[baby]
+                        #print 'CASE 3'
+                        #print 'added ',leftSide,'-->',val[0],dummy,' and ',dummy,'-->',[baby]
                         nonterminals.add(dummy)
 
             if cnf:
@@ -185,14 +185,14 @@ def CKYRecognizer(g,s):
             #for this box, we must check all of the relevant combos!!
             #aka [ (row,row) & (row+1,col), (row,row+1) & (row+2,col) ... (row,col-1) & (col,col) ]
             #and for all of those combos we have to check the actual combos of stuff in the BOXES
-            print ('BOX',row,col)
+            #print ('BOX',row,col)
             for val in range(row,col):
                 first = (row,val)
                 firstbox = matrix[row][val]
                 second = (val+1,col)
                 secondbox = matrix[val+1][col]
-                print first,second
-                print firstbox,secondbox
+                #print first,second
+                #print firstbox,secondbox
                 for v in range(0,len(firstbox)):
                     for x in range(0,len(secondbox)):
                         val1= firstbox[v]
@@ -203,7 +203,10 @@ def CKYRecognizer(g,s):
                             matrix[row][col] += [t]
             row+=1
             col+=1
-    return matrix
+    if 'S' in matrix[0][size-1]:
+        return True
+    else:
+        return False
 
 
 
@@ -220,14 +223,14 @@ def CKYParser(g,s):
 
 """Demonstrations"""
 
-#print InCNF(grammar) # Should return False!
+print InCNF(grammar,terminals,nonterminals) # Should return False!
 
-grammar = UnitProductions(grammar) #NECESSARY STEP
+grammar = UnitProductions(grammar) #NECESSARY STEP!!! I added this helper function to help w/ ConvertToCNF
 newgrammar = ConvertToCNF(grammar,0,terminals,nonterminals)
 
-#print newgrammar
+print newgrammar
 
-#print InCNF(newgrammar) # Should return True!
+print InCNF(newgrammar,terminals,nonterminals) # Should return True!
 
 print CKYRecognizer(newgrammar,'book that flight through Houston') # Should return True!
 
