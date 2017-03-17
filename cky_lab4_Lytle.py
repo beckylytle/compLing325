@@ -14,9 +14,11 @@ def InCNF(g,terminals,nonterminals):
     # takes a grammar and returns True if that grammar is in CNF and False otherwise.
     value = True
     for leftSide in g:
+        #looping through the keys in the dictionary
         for val in g[leftSide]:
-            if type(val)==type(''): #so like, if the value in the list is a string:
-                if not val in terminals: #CHECK THAT THEY'RE TERMINALS
+        #looping through the diff rules for each key's value (so something like [['NP','VP'],['Aux','NP','VP'],['VP']])
+            if type(val)==type(''): #so like, if the value in the list is a string
+                if not val in terminals: #CHECK THAT THEY'RE TERMINALS!!
                     value = False
             else: #this is the case where the value in the list is a list
                 if not len(val) == 2: #CHECK LENGTH
@@ -65,6 +67,7 @@ def UnitProductions(grammar):
                     newg[left]+=[word]
                 #grammar[left].remove([RS])
                 newg[left].remove([RS])
+
     check = checkUnit(newg)
     if check:
         return newg
@@ -130,6 +133,7 @@ def ConvertToCNF(g,i,terminals,nonterminals):
         return ConvertToCNF(newG,i,terminals,nonterminals) #do it again? maybe not the most efficient method
 
 """
+THIS WAS JUST MY SMALL TEST DATA!!
 terminals = ['e']
 nonterminals = ['S','A','B','C']
 grammar = {'S':[['A','B','C'],['A']],'A':[['C']],'B':[['A'],['B','C']],'C':['e'] }
@@ -209,7 +213,6 @@ def CKYRecognizer(g,s):
         return False
 
 
-
 """Extra Credit"""
 
 # Extra Credit (optional): Modify your CKYRecognizer function to instead return a valid parse of the string, if one exists.
@@ -221,7 +224,14 @@ def CKYParser(g,s):
     return []  # Placeholder
 
 
-"""Demonstrations"""
+"""Demonstrations!
+
+Note: I added a few helper functions along the way, so that's why I call both UnitProductions and ConvertToCNF
+when converting the grammar to CNF.  I also added terminals & nonterminals as parameters for the functions.
+But the functions still do what they're supposed to do!
+
+"""
+
 
 print InCNF(grammar,terminals,nonterminals) # Should return False!
 
